@@ -1,10 +1,18 @@
-const Product = require('../models/productModel'); // Import the Product model
+const Product = require('../models/productModel');
+const Rating = require('../models/ratingModel');
+const User = require('../models/userModel');
 
-// Controller function to fetch a single product by ID
+
 exports.getProductById = async (req, res) => {
   try {
     const productId = req.params.id;
-    const product = await Product.findById(productId);
+    const product = await Product.findById(productId).populate({
+      path: 'ratings',
+      populate: {
+        path: 'user',
+        select: 'name' // Assuming you want to populate only the username field of the user object
+      }
+    });
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }

@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const productsRoutes = require('./routes/productRoutes');
 const productEachRoutes = require('./routes/productEachRoutes');
+const reviewsRouter = require('./routes/reviewsRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -23,6 +24,7 @@ app.use('/uploaded', express.static(path.join(__dirname, 'uploaded')));
 // Routes
 app.use('/api', productsRoutes); // Use the product routes
 app.use('/product', productEachRoutes);
+app.use('/api/reviews', reviewsRouter);
 
 // Error handler middleware
 app.use((err, req, res, next) => {

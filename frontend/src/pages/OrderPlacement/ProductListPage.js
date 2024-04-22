@@ -10,8 +10,9 @@ const ProductListPage = ({ history }) => {
 
   const handleProductClick = (productId) => {
     setSelectedProductId(productId);
-    history.push(`/product/${productId}`);
+    history.push(`/product/${productId}`); // Update the route to include the productId
   };
+  
 
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
