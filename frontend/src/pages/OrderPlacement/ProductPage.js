@@ -5,9 +5,12 @@ import axios from 'axios';
 const ProductPage = () => {
   const [product, setProduct] = useState(null);
   const [reviewText, setReviewText] = useState('');
-  const [rating, setRating] = useState(5);
-  const [showMessage, setShowMessage] = useState(false); // State for showing message
+  const [rating, setRating] = useState(0); // Initialize rating to 0
+  const [showCartItemMessage, setShowCartItemMessage] = useState(false); // State for showing cart item message
+  const [showReviewMessage, setShowReviewMessage] = useState(false); // State for showing review message
+  const [quantity, setQuantity] = useState(1); // State for quantity
   const { id } = useParams();
+  const userId = '661ce96f893253cc9d63fa64'; // Static user ID for testing
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -22,26 +25,53 @@ const ProductPage = () => {
     fetchProduct();
   }, [id]);
 
-  const handleReviewSubmit = async () => {
+  const handleReviewSubmit = async (event) => {
+    event.preventDefault(); // Prevent default form submission behavior
     try {
       const response = await axios.post('/api/reviews', {
-        userId: '661ce96f893253cc9d63fa68',
+        userId: userId,
         review: reviewText,
         starRating: rating,
         productId: product._id
       });
       console.log('Review submitted:', response.data);
-      setShowMessage(true); // Show message
+      setShowReviewMessage(true); // Show review message
       setTimeout(() => {
-        window.location.reload(); // Reload page after brief delay
+        setShowReviewMessage(false); // Hide review message after 2 seconds
+        window.location.reload(); // Reload page
       }, 2000); // 2000 milliseconds (2 seconds)
     } catch (error) {
       console.error('Error submitting review:', error);
     }
   };
 
+  const handleAddToCart = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await axios.post('/api/cart/add', {
+        userId: userId,
+        productId: product._id,
+        quantity: quantity
+      });
+      console.log('Item added to cart:', response.data);
+      setShowCartItemMessage(true); // Show cart item message
+      setTimeout(() => {
+        setShowCartItemMessage(false); // Hide cart item message after 2 seconds
+        window.location.reload(); // Reload page
+      }, 2000);
+      setQuantity(1); // Reset quantity to 1
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+    }
+  };
+
   if (!product) {
-    return <div>Loading...</div>;
+    // Display loading animation
+    return (
+      <div className="container mx-auto px-4 py-8 flex justify-center items-center h-screen">
+        <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32"></div>
+      </div>
+    );
   }
 
   const [firstImage, ...restImages] = product.images;
@@ -73,11 +103,30 @@ const ProductPage = () => {
             <div>
               <p className="text-gray-800 font-bold">${product.price}</p>
               <label htmlFor="quantity" className="mr-2">Quantity:</label>
-              <input type="number" id="quantity" min="1" max="10" defaultValue="1" className="border border-gray-400 rounded-md p-1 w-16" />
+              <input 
+                type="number" 
+                id="quantity" 
+                min="1" 
+                max="10" 
+                value={quantity} 
+                onChange={(e) => setQuantity(e.target.value)}
+                className="border border-gray-400 rounded-md p-1 w-16" 
+              />
             </div>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4">Add to Cart</button>
+            <button 
+              className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
+              onClick={handleAddToCart}
+            >
+              Add to Cart
+            </button>
           </div>
         </div>
+        {/* Floating message for cart item added */}
+        {showCartItemMessage && (
+          <div className="fixed bottom-4 left-4 bg-gray-800 text-white p-4 rounded-md">
+            Item added to cart!
+          </div>
+        )}
         {/* Reviews and Ratings */}
         <div className="col-span-3 mt-8">
           <hr className="my-4" />
@@ -108,13 +157,13 @@ const ProductPage = () => {
             >
               Submit Review
             </button>
-            {/* Show message with animation */}
-            {showMessage && (
-              <div className="bg-green-500 text-white px-4 py-2 rounded-md mt-2 animate-fadeIn">
-                Review posted!
-              </div>
-            )}
           </div>
+          {/* Floating message for review submitted */}
+          {showReviewMessage && (
+            <div className="fixed bottom-4 left-4 bg-gray-800 text-white p-4 rounded-md">
+              Review submitted!
+            </div>
+          )}
           {/* Display Ratings */}
           <ul>
             {product.ratings.map((ratingItem, index) => (

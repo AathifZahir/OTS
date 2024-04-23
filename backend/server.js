@@ -1,6 +1,7 @@
 // server.js
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const path = require('path');
 const productsRoutes = require('./routes/productRoutes');
 const productEachRoutes = require('./routes/productEachRoutes');
@@ -18,6 +19,7 @@ mongoose.connect(MONGO_URI, {
 
 // Middleware
 app.use(express.json());
+app.use(cors());
 
 app.use('/uploaded', express.static(path.join(__dirname, 'uploaded')));
 
@@ -25,6 +27,7 @@ app.use('/uploaded', express.static(path.join(__dirname, 'uploaded')));
 app.use('/api', productsRoutes); // Use the product routes
 app.use('/product', productEachRoutes);
 app.use('/api/reviews', reviewsRouter);
+app.use('/api/cart', require('./routes/cartRoutes'));
 
 // Error handler middleware
 app.use((err, req, res, next) => {
