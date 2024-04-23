@@ -15,10 +15,17 @@ router.post('/add', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Find the user's cart or create a new one if it doesn't exist
+    // Find or create the user's cart
     let cart = await Cart.findOne({ user: userId });
     if (!cart) {
+      // Create a new cart
       cart = new Cart({ user: userId, cartItems: [] });
+      // Save the cart to get its ID
+      cart = await cart.save();
+      // Update the user's cart ID
+      user.cart = cart._id;
+      // Save the updated user document
+      await user.save();
     }
 
     // Create a new cart item
@@ -30,11 +37,6 @@ router.post('/add', async (req, res) => {
 
     // Save the cart item to the database
     const savedCartItem = await cartItem.save();
-
-    // Ensure that cart is not undefined before accessing its properties
-    if (!cart) {
-      throw new Error('Cart not found');
-    }
 
     // Update the user's cart by adding the ID of the newly created cart item
     cart.cartItem.push(savedCartItem._id);
